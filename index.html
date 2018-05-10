@@ -19,9 +19,43 @@
   ga('send', 'pageview');
 
 	</script>
+	
 	</head>
     <body>
-      
+    <style>
+	/* Tooltip container */
+	.tooltip {
+		position: relative;
+		display: inline-block;
+		font-style: italic;
+		border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+	}
+
+	/* Tooltip text */
+	.tooltip .tooltiptext {
+		visibility: hidden;
+		width: 800px;
+		top: 100%;
+		left: 50%;
+		margin-left: -400px; /* Use half of the width (800/2 = 400), to center the tooltip */		background-color: black;
+		color: #fff;
+		text-align: left;
+		padding: 10px ;
+		border-radius: 6px;
+	 
+		/* Position the tooltip text - see examples below! */
+		position: absolute;
+		z-index: 1;
+	}
+
+	/* Show the tooltip text when you mouse over the tooltip container */
+	.tooltip:hover .tooltiptext {
+		visibility: visible;
+	}
+	ul {
+	list-style-type: none;
+		}
+	</style>  
         <div id="page">
             <header>
                 <h1 id="logo"><b><i>Jesse Hahm</i> - PhD Student - Earth and Planetary Science - UC Berkeley</b></h1>
@@ -83,39 +117,66 @@
 						<ul>
                         
                                 <li>
-								<i>Controls on the distribution and resilience of Quercus garryana: ecophysiological evidence of oak’s water-limitation tolerance.</i>
+								<div class="tooltip">Controls on the distribution and resilience of Quercus garryana: ecophysiological evidence of oak’s water-limitation tolerance.
+								<span class="tooltiptext">Abstract. The composition of forests in Western North America is changing. The decline in the shade intolerant Oregon white oak (Quercus garryana var. garryana) is attributed to increased competition with the tall-growing Douglas fir (Pseudotsuga menziesii var. menziesii) as a result of widespread fire exclusion. In a warmer, drier future, both species will experience increased water stress, and their distribution will depend on ecophysiological adaptations to water limitation, of which little is known for Q. garryana. Here, we report a suite of new ecophysiological observations to better understand the oak’s water-limitation tolerance, in order to predict its fate in a changing climate. Our study site in the Central Belt of the Franciscan Formation in the Northern California Coast Ranges receives almost no rain in the leaf-on growing season and has limited subsurface water storage capacity. In spite of low pre-dawn water potentials (Ψ; to below -3.0 MPa), mature trees maintained high rates of sapflow. Sapflow continued due to a high Ψ gradient (-1.6 MPa on average) at mid-day between shoots and the subsurface (inferred from pre-dawn measurements) throughout the dry season. Depletion and recharge of stored water in stem tissue and leaves helped to sustain transpiration. Leaves experienced low Ψ (below -4 MPa), and declining hydraulic conductance yet remained functional. Pressure–volume curve analyses revealed that the maintenance of positive turgor pressures in leaves at low Ψ may be attributable to dynamic adjustment due to changes in cell wall elasticity. The turgor loss point may be of limited use in delineating ecophysiological limits to growth and reproduction, as transpiration and apparently normal physiological behavior continued after pre-dawn water potentials declined below turgor loss limits inferred from rehydrated leaves. These findings indicate that Q. garryana is a water-limitation-tolerant tree species that maintains hydraulic function as subsurface water supply and atmospheric demand conditions exceed the ranges at which P. menziesii can operate. These observations can be used to explain Q. garryana’s extant species range and anticipate its likely resilience in a warmer climate. </span>
+								
+								</div> 
+								<br>
 								WJ Hahm, WE Dietrich, TE Dawson. Ecosphere (in press). 
                                 </li>
 								
                                 <li>
-								<i>Drainage from the critical zone: lithologic controls on the persistence and spatial extent of wetted channels during the summer dry season.</i>
+								<div class="tooltip">Drainage from the critical zone: lithologic controls on the persistence and spatial extent of wetted channels during the summer dry season.
+								<span class="tooltiptext">Abstract. In seasonally dry environments, critical zone drainage provides baseflow that sustains river ecosystems. The extent of wetted channels and magnitude of baseflow throughout the network, however, are rarely documented, and no general theory currently exists enabling the prediction of these key ecosystem properties. We conducted channel surveys in early and late summers of 2012, 2014 and 2015 in four headwater drainage networks (2.8 to 17.0 km2, in the Franciscan Formation of the Eel River (Northern California)), two of which are underlain by the Coastal Belt (argillite and inter‐bedded sandstone) and two of which are underlain by the Central Belt (sheared argillaceous‐matrix, meta‐sedimentary mélange). In all networks, stationary springs controlled the extent of flow. Though surveyed during a period of multi‐year drought, the two adjacent Coastal Belt networks remained flowing throughout late‐summer months, sustained by drainage from groundwater stored in thick weathered rock above fresh, impermeable bedrock. Flow magnitudes, however, decreased and surface flows became increasingly discontinuous, largely due to infiltration into thick gravel deposits on the channel bed. Only 23 km away, in the Central Belt mélange, channel flow ceased early in the summer because the thin critical zone (typically <3 m) stored little water. All late‐summer flowing water initiated from deep‐rooted sandstone blocks and terminated a short distance downslope. Our findings suggest that lithology and critical zone development exert primary controls on wetted channel extent. Given similar annual precipitation, nearby watersheds can have dramatically different summer wetted channel networks that result in fundamentally different aquatic ecosystems. </span>
+								
+								</div> 
+								<br>
 								SM Lovill, WJ Hahm, WE Dietrich. Water Resources Research (in press). 
                                 </li>
 								
                                 <li>
-								<i>Quantification of the seasonal hillslope water storage that does not drive streamflow. </i>
+								<div class="tooltip">Quantification of the seasonal hillslope water storage that does not drive streamflow.
+								<span class="tooltiptext">Abstract. 
+								</span>
+								</div>
+								<br>
 								DN Dralle, WJ Hahm, DM Rempe, NJ Karst, SE Thompson, WE Dietrich. Hydrological Processes (in press). 
                                 </li>
 								
                                 <li>
-								<i>Controls on deep critical zone architecture: A historical review and four testable hypotheses. </i>
-								CS Riebe, WJ Hahm, SL Brantley. Earth Surface Processes and Landforms <a href="http://onlinelibrary.wiley.com/doi/10.1002/esp.4052/full" title="http://onlinelibrary.wiley.com/doi/10.1002/esp.4052/full" rel="nofollow">(journal website - external link)</a>, 
+								<div class="tooltip">Controls on deep critical zone architecture: A historical review and four testable hypotheses.
+								<span class="tooltiptext">Abstract. The base of Earth's critical zone (CZ) is commonly shielded from study by many meters of overlying rock and regolith. Though deep CZ processes may seem far removed from the surface, they are vital in shaping it, preparing rock for infusion into the biosphere and breaking Earth materials down for transport across landscapes. This special issue highlights outstanding challenges and recent advances of deep CZ research in a series of articles that we introduce here in the context of relevant literature dating back to the 1500s. Building on several contributions to the special issue, we highlight four exciting new hypotheses about factors that drive deep CZ weathering and thus influence the evolution of life‐sustaining CZ architecture. These hypotheses have emerged from recently developed process‐based models of subsurface phenomena including: fracturing related to subsurface stress fields; weathering related to drainage of bedrock under hydraulic head gradients; rock damage from frost cracking due to subsurface temperature gradients; and mineral reactions with reactive fluids in subsurface chemical potential gradients. The models predict distinct patterns of subsurface weathering and CZ thickness that can be compared with observations from drilling, sampling and geophysical imaging. We synthesize the four hypotheses into an overarching conceptual model of fracturing and weathering that occurs as Earth materials are exhumed to the surface across subsurface gradients in stress, hydraulic head, temperature, and chemical potential. We conclude with a call for a coordinated measurement campaign designed to comprehensively test the four hypotheses across a range of climatic, tectonic and geologic conditions. </span>
+								</div> 
+								<br>
+								CS Riebe, WJ Hahm, SL Brantley. Earth Surface Processes and Landforms, 2016.
+								<br>
+								<a href="http://onlinelibrary.wiley.com/doi/10.1002/esp.4052/full" title="http://onlinelibrary.wiley.com/doi/10.1002/esp.4052/full" rel="nofollow">(journal website - external link)</a>, 
 								<a href="pubs/Riebe_et_al-2016-Earth_Surface_Processes_and_Landforms.pdf" title="Riebe_et_al-2016-Earth_Surface_Processes_and_Landforms.pdf" rel="nofollow">(pdf)</a>  . 
                                 </li>
 
                                 <li>
-								<i>Testing for supply-limited and kinetic-limited chemical erosion in field measurements of regolith production and chemical depletion.</i> 
-								<a href="pubs/Ferrier_et_al-2016-Geochemistry,_Geophysics,_Geosystems.pdf" title="Ferrier_et_al-2016-Geochemistry,_Geophysics,_Geosystems.pdf">(pdf)</a> 
-								KL Ferrier, CS Riebe, WJ Hahm. Geochemistry, Geophysics, Geosystems, June 2016.
+								<div class="tooltip">Testing for supply-limited and kinetic-limited chemical erosion in field measurements of regolith production and chemical depletion.
+								<span class="tooltiptext">Abstract. Chemical erosion contributes solutes to oceans, influencing atmospheric CO2 and thus global climate via the greenhouse effect. Quantifying how chemical erosion rates vary with climate and tectonics is therefore vital to understanding feedbacks that have maintained Earth's environment within a habitable range over geologic time. If chemical erosion rates are strongly influenced by the availability of fresh minerals for dissolution, then there should be strong connections between climate, which is modulated by chemical erosion, and tectonic uplift, which supplies fresh minerals to Earth's surface. This condition, referred to as supply‐limited chemical erosion, implies strong tectonic control of chemical erosion rates. It differs from kinetic‐limited chemical erosion, in which dissolution kinetics and thus climatic factors are the dominant regulators of chemical erosion rates. Here we present a statistical method for determining whether chemical erosion of silicate‐rich bedrock is supply limited or kinetic limited, as an approach for revealing the relative importance of tectonics and climate in Earth's silicate weathering thermostat. We applied this method to published data sets of mineral supply rates and regolith chemical depletion and were unable to reject the null hypothesis that chemical erosion is supply limited in 8 of 16 cases. In seven of the remaining eight cases, we found behavior that is closer to supply limited than kinetic limited, suggesting that tectonics may often dominate over climate in regulating chemical erosion rates. However, statistical power analysis shows that new measurements across a wider range of supply rates are needed to help quantify feedbacks between climate and tectonics in Earth's long‐term climatic evolution. 								</span>
+
+								</div> 
+								<br>
+								KL Ferrier, CS Riebe, WJ Hahm. Geochemistry, Geophysics, Geosystems, 2016.
+								<br>
+								<a href="pubs/Ferrier_et_al-2016-Geochemistry,_Geophysics,_Geosystems.pdf" title="Ferrier_et_al-2016-Geochemistry,_Geophysics,_Geosystems.pdf">(pdf)</a>
 								</li>								
+                                
+								<li>
+								<div class="tooltip">Bedrock composition regulates mountain ecosystems and landscape evolution.
+								<span class="tooltiptext">Abstract. Earth’s land surface teems with life. Although the distribution of ecosystems is largely explained by temperature and precipitation, vegetation can vary markedly with little variation in climate. Here we explore the role of bedrock in governing the distribution of forest cover across the Sierra Nevada Batholith, California. Our sites span a narrow range of elevations and thus a narrow range in climate. However, land cover varies from Giant Sequoia (Sequoiadendron giganteum), the largest trees on Earth, to vegetation-free swaths that are visible from space. Meanwhile, underlying bedrock spans nearly the entire compositional range of granitic bedrock in the western North American cordillera. We explored connections between lithology and vegetation using measurements of bedrock geochemistry and forest productivity. Tree-canopy cover, a proxy for forest productivity, varies by more than an order of magnitude across our sites, changing abruptly at mapped contacts between plutons and correlating with bedrock concentrations of major and minor elements, including the plant-essential nutrient phosphorus. Nutrient-poor areas that lack vegetation and soil are eroding more than two times slower on average than surrounding, more nutrient-rich, soil-mantled bedrock. This suggests that bedrock geochemistry can influence landscape evolution through an intrinsic limitation on primary productivity. Our results are consistent with widespread bottom-up lithologic control on the distribution and diversity of vegetation in mountainous terrain.</span>
+								</div> 
+								<br>
 								
-                                <li>
-								<i>Bedrock composition regulates mountain ecosystems and landscape evolution. </i>
+								WJ Hahm, CS Riebe, CE Lukens, S Araki. Proceedings of the National Academy of Sciences, 2014.
+								<br>
 								<a href="pubs/Hahm%20et%20al%202014%20PNAS.pdf?" title="Hahm et al 2014 PNAS.pdf">(article pdf)</a> ,
 								<a href="pubs/Hahm%20et%20al%202014%20PNAS%20SI.pdf" title="Hahm et al 2014 PNAS SI.pdf">(SI PDF)</a> ,
 								<a href="pubs/Hahm%20et%20al%202014%20PNAS%20SI.xls" title="Hahm et al 2014 PNAS SI.xls">(SI spreadsheet) </a> ,
 								<a href="http://www.pnas.org/content/111/9/3338.full" title="http://www.pnas.org/content/111/9/3338.full">(journal website - external link)</a> 
-								WJ Hahm, CS Riebe, CE Lukens, S Araki. Proceedings of the National Academy of Sciences, 2014, vol. 111 no. 9, 3338-3343.
 								<br>
 								<i>See also:</i> <i>Coevolution of life and landscapes (Commentary).</i> 
 								<a href="pubs/Porder%202014%20pnas%20commentary.pdf" title="Porder 2014 pnas commentary.pdf">(pdf)</a>, 
@@ -124,9 +185,14 @@
                                 </li>
 								
                                 <li>
-								<i>Landscape response to tipping points in granite weathering: The case of stepped topography in the Southern Sierra Critical Zone Observatory.</i> 
+								<div class="tooltip">Landscape response to tipping points in granite weathering: The case of stepped topography in the Southern Sierra Critical Zone Observatory.
+								<span class="tooltiptext">Abstract. The dynamics of granitic landscapes are modulated by bimodal weathering, which produces patchy granular soils and expanses of bare rock ranging from meter-scale boulders to mountain-scale domes. We used terrain analysis and with cosmogenic nuclide measurements of erosion rates to quantitatively explore Wahrhaftig’s decades-old hypothesis for the development of “stepped topography” by differential weathering of bare and soil-mantled granite. According to Wahrhaftig’s hypothesis, bare granite weathers slower than soil-mantled granite; thus random erosional exposure of bare rock leads to an alternating sequence of steep, slowly weathering bedrock “steps” and gently sloped, but rapidly weathering, soil-mantled “treads.” Our investigation focused on the terrain surrounding the Southern Sierra Critical Zone Observatory (CZO), which is underlain by granitic bedrock and lies outside the limits of recent glaciation, in the heart of the stepped topography described by Wahrhaftig. Our digital terrain analysis confirms that steep steps often grade into gentle treads, consistent with Wahrhaftig’s hypothesis. However, we observe a mix-and-match of soil and bare rock on treads and steps, contrary to one of the hypothesis’ major underpinnings – that bare rock should be much more common on steps than on treads. Moreover, the data show that bare rock is not as common as expected at step tops; Wahrhaftig’s hypothesis dictates that step tops should act as slowly eroding base levels for the treads above them. The data indicate that, within each landscape class (i.e., the steps and treads), bare rock erodes more slowly than surrounding soil. This suggests that the coupling between soil production and denudation in granitic landscapes harbors a tipping point wherein erosion rates decrease when soils are stripped to bedrock. Although broadly consistent with the differential weathering invoked by Wahrhaftig, the data also show that steps are eroding faster than treads, undermining Wahrhaftig’s explanation for the origins of the steps. The revised interpretation proposed here is that the landscape evolves by back-wearing of steps in addition to differential erosion due to differences in weathering of bare and soil-mantled granite.</span>
+								</div> 
+								<br>
+								BS Jessup, WJ Hahm, SN Miller, JW Kirchner, CS Riebe. Applied Geochemistry Supplement, 2011.
+								<br>
 								<a href="pubs/Jessup%20et%20al.%202011%20Stepped%20Topography.pdf" title="Jessup et al. 2011 Stepped Topography.pdf">(pdf)</a> 
-								BS Jessup, WJ Hahm, SN Miller, JW Kirchner, CS Riebe. Applied Geochemistry Supplement, June 2011.
+
 								</li>
 
                         
@@ -288,7 +354,7 @@
                 </p>
                 <p>
                     
-                    Last updated September, 2016
+                    Last updated May, 2018
                 </p>
             </footer>
         </div>
