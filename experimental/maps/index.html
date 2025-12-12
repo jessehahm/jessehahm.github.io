@@ -2,17 +2,31 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Watershed Subbasins & Streams</title>
+    <title>Watershed Subbasins & Streamflow</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
     <script src="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        /* Optional: Style the popup to make it scrollable if there's a lot of data */
+        
+        /* Make the popup wide enough for the chart */
         .maplibregl-popup-content {
-            max-height: 300px;
-            overflow-y: auto;
+            width: 450px !important;
+            max-width: 90vw;
+            padding: 15px;
+        }
+        
+        /* Style for the chart container */
+        #chart-container {
+            width: 100%;
+            height: 300px;
         }
     </style>
 </head>
@@ -40,21 +54,15 @@
         // --- SOURCE 1: SUBBASINS ---
         map.addSource('my-subbasins', {
             'type': 'vector',
-            'tiles': [
-                window.location.href.replace('/index.html', '') + '/output_tiles/{z}/{x}/{y}.pbf'
-            ],
-            'minzoom': 0,
-            'maxzoom': 12 
+            'tiles': [ window.location.href.replace('/index.html', '') + '/output_tiles/{z}/{x}/{y}.pbf' ],
+            'minzoom': 0, 'maxzoom': 12 
         });
 
         // --- SOURCE 2: STREAMS ---
         map.addSource('my-streams', {
             'type': 'vector',
-            'tiles': [
-                window.location.href.replace('/index.html', '') + '/topology_tiles/{z}/{x}/{y}.pbf'
-            ],
-            'minzoom': 0,
-            'maxzoom': 12 
+            'tiles': [ window.location.href.replace('/index.html', '') + '/topology_tiles/{z}/{x}/{y}.pbf' ],
+            'minzoom': 0, 'maxzoom': 12 
         });
 
         // --- LAYER 1: Subbasin Fill ---
@@ -90,74 +98,128 @@
             'source-layer': 'tu_domain_topology_wgs84', 
             'paint': {
                 'line-color': '#00BFFF', 
-                'line-width': 3, // Made thicker (3px) so they are easier to click
+                'line-width': 3, 
                 'line-opacity': 0.9
             }
         });
 
         // ============================================
-        // INTERACTIVITY 1: SUBBASINS
+        // INTERACTIVITY 1: SUBBASINS (Click)
         // ============================================
         map.on('click', 'subbasin-fill', function (e) {
-            var coordinates = e.lngLat;
-            if (!e.features || e.features.length === 0) return;
             var props = e.features[0].properties;
-
             var content = '<h3>Subbasin Info</h3>' +
                           '<p><strong>REW:</strong> ' + (props.REW || 'N/A') + '</p>' +
-                          '<p><strong>FID:</strong> ' + (props.FID || 'N/A') + '</p>' +
-                          '<p><strong>Value:</strong> ' + (props.VALUE || 'N/A') + '</p>';
+                          '<p><strong>FID:</strong> ' + (props.FID || 'N/A') + '</p>';
 
             new maplibregl.Popup()
-                .setLngLat(coordinates)
+                .setLngLat(e.lngLat)
                 .setHTML(content)
                 .addTo(map);
         });
 
-        map.on('mouseenter', 'subbasin-fill', function () {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-        map.on('mouseleave', 'subbasin-fill', function () {
-            map.getCanvas().style.cursor = '';
-        });
-
-
         // ============================================
-        // INTERACTIVITY 2: STREAMS (NEW)
+        // INTERACTIVITY 2: STREAMS + CHART + DOWNLOAD
         // ============================================
         map.on('click', 'stream-lines', function (e) {
-            // Prevent the click from "falling through" to the subbasin below it
-            // This ensures if you click a stream, you only see stream info.
             e.preventDefault(); 
-
+            
             var coordinates = e.lngLat;
-            if (!e.features || e.features.length === 0) return;
-
             var props = e.features[0].properties;
+            var rewName = props.REW; 
 
-            // AUTO-GENERATED CONTENT
-            // Since we don't know your column names, this loop prints ALL data attached to the line.
-            var content = '<h3>Stream Info</h3>';
-            for (var key in props) {
-                content += '<p><strong>' + key + ':</strong> ' + props[key] + '</p>';
-            }
+            // 1. Construct CSV Path immediately
+            // We use this for both the download link and the chart data fetch
+            var csvUrl = window.location.href.replace('/index.html', '') + '/flow_csvs/' + rewName + '.csv';
 
+            // 2. Create the Popup HTML (With Download Link)
+            // 'download' attribute forces browser to download file instead of navigating to it
+            var popupContent = `
+                <div style="font-family: sans-serif;">
+                    <h3 style="margin: 0 0 5px 0;">${rewName} Streamflow</h3>
+                    
+                    <a href="${csvUrl}" download style="display:block; margin-bottom:15px; font-size:12px; color:#007bff; text-decoration:none;">
+                        &#11015; Download Raw Data (.csv)
+                    </a>
+
+                    <div id="chart-container">Loading data...</div>
+                </div>
+            `;
+
+            // 3. Open the popup
             new maplibregl.Popup()
                 .setLngLat(coordinates)
-                .setHTML(content)
+                .setHTML(popupContent)
                 .addTo(map);
+
+            // 4. Fetch and Parse CSV for the Chart
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true, 
+                skipEmptyLines: true,
+                dynamicTyping: true, 
+                complete: function(results) {
+                    var data = results.data;
+
+                    if (!data || data.length === 0) {
+                        document.getElementById('chart-container').innerHTML = "No data found in CSV.";
+                        return;
+                    }
+
+                    // Prepare Data for Plotly
+                    var xDates = [];
+                    var yFlows = [];
+                    
+                    var keys = Object.keys(data[0]); // Auto-detect column headers
+                    var dateKey = keys[0];
+                    var flowKey = keys[1];
+
+                    data.forEach(function(row) {
+                        xDates.push(row[dateKey]);
+                        yFlows.push(row[flowKey]);
+                    });
+
+                    // Draw the Plot
+                    var trace1 = {
+                        x: xDates,
+                        y: yFlows,
+                        mode: 'lines',
+                        type: 'scatter',
+                        line: { color: '#17BECF' },
+                        name: 'Streamflow'
+                    };
+
+                    var layout = {
+                        margin: { t: 10, r: 10, b: 40, l: 50 }, 
+                        xaxis: { title: 'Date' },
+                        yaxis: { title: 'Flow (mm/day)' },
+                        dragmode: 'zoom',
+                        hovermode: 'closest'
+                    };
+
+                    var config = {
+                        responsive: true,
+                        displayModeBar: true,
+                        modeBarButtonsToRemove: ['toImage', 'sendDataToCloud']
+                    };
+
+                    Plotly.newPlot('chart-container', [trace1], layout, config);
+                },
+                error: function(err) {
+                    document.getElementById('chart-container').innerHTML = 
+                        "<p style='color:red;'>Could not load chart data.<br>Missing file: " + rewName + ".csv</p>";
+                }
+            });
         });
 
-        // Change Cursor for Streams
-        map.on('mouseenter', 'stream-lines', function () {
-            map.getCanvas().style.cursor = 'pointer';
+        // Hover cursors
+        map.on('mouseenter', 'subbasin-fill', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'subbasin-fill', () => map.getCanvas().style.cursor = '');
+        map.on('mouseenter', 'stream-lines', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'stream-lines', () => {
+             var features = map.queryRenderedFeatures(event.point, { layers: ['subbasin-fill'] });
+             map.getCanvas().style.cursor = features.length ? 'pointer' : '';
         });
-        map.on('mouseleave', 'stream-lines', function () {
-            // Check if we are still hovering over the subbasin so we don't flicker
-            var features = map.queryRenderedFeatures(event.point, { layers: ['subbasin-fill'] });
-            map.getCanvas().style.cursor = features.length ? 'pointer' : '';
-        });
-
     });
 </script>
 
