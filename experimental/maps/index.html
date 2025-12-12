@@ -16,33 +16,51 @@
 <div id="map"></div>
 
 <script>
+    // 1. DATA BOUNDS from your metadata.json
+    // [West, South, East, North]
+    // We add a tiny bit of padding so the user doesn't feel "claustrophobic"
+    // but strictly speaking, these are your data edges.
+    var bounds = [
+        [-124.5, 36.9], // Southwest coordinate (approx)
+        [-121.3, 40.5]  // Northeast coordinate (approx)
+    ];
+
     var map = new maplibregl.Map({
         container: 'map',
-        // Free basemap (Carto Voyager is clean and nice)
+        // Free basemap (Carto Voyager)
         style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-        center: [-120.5, 37.5], // Approximate Center of California
-        zoom: 6
+        
+        // Center from metadata.json: "-121.860352,37.335216"
+        center: [-121.860352, 37.335216], 
+        
+        // Start at a zoom level where we can see the whole dataset
+        zoom: 8, 
+        
+        // CRITICAL: This locks the user into the area where you actually have tiles.
+        // It prevents panning into empty white space where files are missing.
+        maxBounds: bounds
     });
 
     map.on('load', function () {
         
-        // 1. Add Source
+        // 2. Add Source
         map.addSource('my-subbasins', {
             'type': 'vector',
             'tiles': [
-                // RELATIVE PATH: This looks for the folder next to index.html
+                // Builds the URL dynamically based on where this file is hosted
                 window.location.href.replace('/index.html', '') + '/output_tiles/{z}/{x}/{y}.pbf'
             ],
-            'minzoom': 5,
+            // EXACT MATCH from metadata.json
+            'minzoom': 0,
             'maxzoom': 12 
         });
 
-        // 2. Add Layer
+        // 3. Add Fill Layer
         map.addLayer({
             'id': 'subbasin-fill',
             'type': 'fill', 
             'source': 'my-subbasins',
-            // MUST MATCH the name from your Tippecanoe output
+            // EXACT MATCH from metadata.json json: "vector_layers": [ { "id": "subbasins_wgs84" ...
             'source-layer': 'subbasins_wgs84', 
             'paint': {
                 'fill-color': '#0080ff',
@@ -51,7 +69,7 @@
             }
         });
 
-        // 3. Optional: Add a line layer on top to make borders pop
+        // 4. Add Line Layer (Border)
         map.addLayer({
             'id': 'subbasin-line',
             'type': 'line',
