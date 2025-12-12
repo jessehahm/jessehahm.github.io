@@ -27,6 +27,7 @@
         #chart-container {
             width: 100%;
             height: 300px;
+            background-color: #f9f9f9; /* Light grey background to show it exists */
         }
     </style>
 </head>
@@ -49,19 +50,33 @@
         maxBounds: bounds
     });
 
+    // HELPER: robustly get the root URL
+    function getRootUrl() {
+        var url = window.location.href;
+        // Strip 'index.html' if present
+        url = url.replace(/\/index\.html$/, '');
+        // Strip trailing slash if present
+        if (url.endsWith('/')) {
+            url = url.slice(0, -1);
+        }
+        return url;
+    }
+
     map.on('load', function () {
-        
+        var rootUrl = getRootUrl();
+        console.log("Root URL detected as:", rootUrl);
+
         // --- SOURCE 1: SUBBASINS ---
         map.addSource('my-subbasins', {
             'type': 'vector',
-            'tiles': [ window.location.href.replace('/index.html', '') + '/output_tiles/{z}/{x}/{y}.pbf' ],
+            'tiles': [ rootUrl + '/output_tiles/{z}/{x}/{y}.pbf' ],
             'minzoom': 0, 'maxzoom': 12 
         });
 
         // --- SOURCE 2: STREAMS ---
         map.addSource('my-streams', {
             'type': 'vector',
-            'tiles': [ window.location.href.replace('/index.html', '') + '/topology_tiles/{z}/{x}/{y}.pbf' ],
+            'tiles': [ rootUrl + '/topology_tiles/{z}/{x}/{y}.pbf' ],
             'minzoom': 0, 'maxzoom': 12 
         });
 
@@ -83,7 +98,7 @@
             'id': 'subbasin-line',
             'type': 'line',
             'source': 'my-subbasins',
-            'source-layer': 'subbasins_wgs84',
+            'source-layer': 'subbasins_wgs84', 
             'paint': {
                 'line-color': '#004080',
                 'line-width': 1
@@ -98,15 +113,38 @@
             'source-layer': 'tu_domain_topology_wgs84', 
             'paint': {
                 'line-color': '#00BFFF', 
-                'line-width': 3, 
+                'line-width': 4, // Nice and thick for clicking
                 'line-opacity': 0.9
             }
         });
 
         // ============================================
-        // INTERACTIVITY 1: SUBBASINS (Click)
+        // HOVER EFFECTS (FIXED)
+        // ============================================
+        
+        // Subbasins
+        map.on('mouseenter', 'subbasin-fill', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'subbasin-fill', () => map.getCanvas().style.cursor = '');
+
+        // Streams
+        map.on('mouseenter', 'stream-lines', () => map.getCanvas().style.cursor = 'pointer');
+        
+        // BUG FIX: Added 'e' parameter to this function
+        map.on('mouseleave', 'stream-lines', (e) => {
+             // Check if we are still over a subbasin (don't flicker if moving from stream to basin)
+             // BUG FIX: Used 'e.point' instead of 'event.point'
+             var features = map.queryRenderedFeatures(e.point, { layers: ['subbasin-fill'] });
+             map.getCanvas().style.cursor = features.length ? 'pointer' : '';
+        });
+
+        // ============================================
+        // CLICK 1: SUBBASINS
         // ============================================
         map.on('click', 'subbasin-fill', function (e) {
+            // Priority Check: If we clicked a stream, stop here.
+            var streamFeatures = map.queryRenderedFeatures(e.point, { layers: ['stream-lines'] });
+            if (streamFeatures.length > 0) return; 
+
             var props = e.features[0].properties;
             var content = '<h3>Subbasin Info</h3>' +
                           '<p><strong>REW:</strong> ' + (props.REW || 'N/A') + '</p>' +
@@ -119,7 +157,7 @@
         });
 
         // ============================================
-        // INTERACTIVITY 2: STREAMS + CHART + DOWNLOAD
+        // CLICK 2: STREAMS + CHART (DEBUGGED)
         // ============================================
         map.on('click', 'stream-lines', function (e) {
             e.preventDefault(); 
@@ -128,97 +166,90 @@
             var props = e.features[0].properties;
             var rewName = props.REW; 
 
-            // 1. Construct CSV Path immediately
-            // We use this for both the download link and the chart data fetch
-            var csvUrl = window.location.href.replace('/index.html', '') + '/flow_csvs/' + rewName + '.csv';
+            console.log("--- STREAM CLICK DEBUG ---");
+            console.log("1. Clicked REW Name:", rewName); 
 
-            // 2. Create the Popup HTML (With Download Link)
-            // 'download' attribute forces browser to download file instead of navigating to it
+            if (!rewName) {
+                console.error("ERROR: REW is undefined. Check Tippecanoe generation.");
+                alert("Error: No REW name found on this line.");
+                return;
+            }
+
+            // Construct CSV Path
+            var rootUrl = getRootUrl();
+            var csvUrl = rootUrl + '/flow_csvs/' + rewName + '.csv';
+            
+            console.log("2. Fetching CSV from:", csvUrl);
+
+            // Create Popup
             var popupContent = `
                 <div style="font-family: sans-serif;">
                     <h3 style="margin: 0 0 5px 0;">${rewName} Streamflow</h3>
-                    
-                    <a href="${csvUrl}" download style="display:block; margin-bottom:15px; font-size:12px; color:#007bff; text-decoration:none;">
-                        &#11015; Download Raw Data (.csv)
+                    <a href="${csvUrl}" download style="display:block; margin-bottom:10px; font-size:12px; color:#007bff;">
+                        &#11015; Download Data
                     </a>
-
-                    <div id="chart-container">Loading data...</div>
+                    <div id="chart-container">Loading Chart...</div>
                 </div>
             `;
 
-            // 3. Open the popup
             new maplibregl.Popup()
                 .setLngLat(coordinates)
                 .setHTML(popupContent)
                 .addTo(map);
 
-            // 4. Fetch and Parse CSV for the Chart
+            // Fetch CSV
             Papa.parse(csvUrl, {
                 download: true,
                 header: true, 
                 skipEmptyLines: true,
                 dynamicTyping: true, 
                 complete: function(results) {
-                    var data = results.data;
+                    console.log("3. CSV Download Complete. Rows:", results.data.length);
 
+                    var data = results.data;
                     if (!data || data.length === 0) {
                         document.getElementById('chart-container').innerHTML = "No data found in CSV.";
                         return;
                     }
 
-                    // Prepare Data for Plotly
-                    var xDates = [];
-                    var yFlows = [];
-                    
-                    var keys = Object.keys(data[0]); // Auto-detect column headers
+                    // Auto-detect keys (Col 1 = Date, Col 2 = Flow)
+                    var keys = Object.keys(data[0]);
                     var dateKey = keys[0];
                     var flowKey = keys[1];
+                    console.log("4. Using Columns:", dateKey, flowKey);
 
-                    data.forEach(function(row) {
-                        xDates.push(row[dateKey]);
-                        yFlows.push(row[flowKey]);
-                    });
+                    var xDates = data.map(r => r[dateKey]);
+                    var yFlows = data.map(r => r[flowKey]);
 
-                    // Draw the Plot
                     var trace1 = {
                         x: xDates,
                         y: yFlows,
                         mode: 'lines',
                         type: 'scatter',
-                        line: { color: '#17BECF' },
-                        name: 'Streamflow'
+                        line: { color: '#17BECF' }
                     };
 
                     var layout = {
-                        margin: { t: 10, r: 10, b: 40, l: 50 }, 
+                        margin: { t: 10, r: 10, b: 30, l: 40 },
                         xaxis: { title: 'Date' },
-                        yaxis: { title: 'Flow (mm/day)' },
-                        dragmode: 'zoom',
-                        hovermode: 'closest'
+                        yaxis: { title: 'Flow' },
+                        responsive: true
                     };
-
-                    var config = {
-                        responsive: true,
-                        displayModeBar: true,
-                        modeBarButtonsToRemove: ['toImage', 'sendDataToCloud']
-                    };
-
-                    Plotly.newPlot('chart-container', [trace1], layout, config);
+                    
+                    try {
+                        Plotly.newPlot('chart-container', [trace1], layout);
+                        console.log("5. Chart Rendered Successfully");
+                    } catch (err) {
+                        console.error("PLOTLY ERROR:", err);
+                        document.getElementById('chart-container').innerHTML = "Chart Error: " + err.message;
+                    }
                 },
                 error: function(err) {
+                    console.error("CSV LOAD ERROR:", err);
                     document.getElementById('chart-container').innerHTML = 
-                        "<p style='color:red;'>Could not load chart data.<br>Missing file: " + rewName + ".csv</p>";
+                        "<p style='color:red;'>Could not load CSV.<br>Checked path: " + csvUrl + "</p>";
                 }
             });
-        });
-
-        // Hover cursors
-        map.on('mouseenter', 'subbasin-fill', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'subbasin-fill', () => map.getCanvas().style.cursor = '');
-        map.on('mouseenter', 'stream-lines', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'stream-lines', () => {
-             var features = map.queryRenderedFeatures(event.point, { layers: ['subbasin-fill'] });
-             map.getCanvas().style.cursor = features.length ? 'pointer' : '';
         });
     });
 </script>
