@@ -2,13 +2,18 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Watershed Subbasins</title>
+    <title>Watershed Subbasins & Streams</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        /* Optional: Style the popup to make it scrollable if there's a lot of data */
+        .maplibregl-popup-content {
+            max-height: 300px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -16,51 +21,47 @@
 <div id="map"></div>
 
 <script>
-    // 1. DATA BOUNDS from your metadata.json
-    // [West, South, East, North]
-    // We add a tiny bit of padding so the user doesn't feel "claustrophobic"
-    // but strictly speaking, these are your data edges.
+    // 1. DATA BOUNDS
     var bounds = [
-        [-124.5, 36.9], // Southwest coordinate (approx)
-        [-121.3, 40.5]  // Northeast coordinate (approx)
+        [-124.5, 36.9], 
+        [-121.3, 40.5]  
     ];
 
     var map = new maplibregl.Map({
         container: 'map',
-        // Free basemap (Carto Voyager)
         style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-        
-        // Center from metadata.json: "-121.860352,37.335216"
         center: [-121.860352, 37.335216], 
-        
-        // Start at a zoom level where we can see the whole dataset
         zoom: 8, 
-        
-        // CRITICAL: This locks the user into the area where you actually have tiles.
-        // It prevents panning into empty white space where files are missing.
         maxBounds: bounds
     });
 
     map.on('load', function () {
         
-        // 2. Add Source
+        // --- SOURCE 1: SUBBASINS ---
         map.addSource('my-subbasins', {
             'type': 'vector',
             'tiles': [
-                // Builds the URL dynamically based on where this file is hosted
                 window.location.href.replace('/index.html', '') + '/output_tiles/{z}/{x}/{y}.pbf'
             ],
-            // EXACT MATCH from metadata.json
             'minzoom': 0,
             'maxzoom': 12 
         });
 
-        // 3. Add Fill Layer
+        // --- SOURCE 2: STREAMS ---
+        map.addSource('my-streams', {
+            'type': 'vector',
+            'tiles': [
+                window.location.href.replace('/index.html', '') + '/topology_tiles/{z}/{x}/{y}.pbf'
+            ],
+            'minzoom': 0,
+            'maxzoom': 12 
+        });
+
+        // --- LAYER 1: Subbasin Fill ---
         map.addLayer({
             'id': 'subbasin-fill',
             'type': 'fill', 
             'source': 'my-subbasins',
-            // EXACT MATCH from metadata.json json: "vector_layers": [ { "id": "subbasins_wgs84" ...
             'source-layer': 'subbasins_wgs84', 
             'paint': {
                 'fill-color': '#0080ff',
@@ -69,7 +70,7 @@
             }
         });
 
-        // 4. Add Line Layer (Border)
+        // --- LAYER 2: Subbasin Border ---
         map.addLayer({
             'id': 'subbasin-line',
             'type': 'line',
@@ -80,37 +81,83 @@
                 'line-width': 1
             }
         });
-        // 5. Add Click Event
-map.on('click', 'subbasin-fill', function (e) {
-    // A. Get the clicked feature's attributes
-    // e.features[0] is the top-most shape the user clicked on
-    var coordinates = e.lngLat;
-    var props = e.features[0].properties; // This holds your FID, VALUE, REW
 
-    // B. Create the HTML for the popup
-    // We use the column names exactly as they appear in QGIS
-    var content = '<h3>Subbasin Info</h3>' +
-                  '<p><strong>REW:</strong> ' + props.REW + '</p>' +
-                  '<p><strong>FID:</strong> ' + props.FID + '</p>' +
-                  '<p><strong>Value:</strong> ' + props.VALUE + '</p>';
+        // --- LAYER 3: STREAMS ---
+        map.addLayer({
+            'id': 'stream-lines',
+            'type': 'line',
+            'source': 'my-streams',
+            'source-layer': 'tu_domain_topology_wgs84', 
+            'paint': {
+                'line-color': '#00BFFF', 
+                'line-width': 3, // Made thicker (3px) so they are easier to click
+                'line-opacity': 0.9
+            }
+        });
 
-    // C. Create and add the popup to the map
-    new maplibregl.Popup()
-        .setLngLat(coordinates)
-        .setHTML(content)
-        .addTo(map);
-});
+        // ============================================
+        // INTERACTIVITY 1: SUBBASINS
+        // ============================================
+        map.on('click', 'subbasin-fill', function (e) {
+            var coordinates = e.lngLat;
+            if (!e.features || e.features.length === 0) return;
+            var props = e.features[0].properties;
 
-// 6. Change Cursor on Hover (UI Polish)
-// When the mouse enters a polygon, change cursor to a "pointer" hand
-map.on('mouseenter', 'subbasin-fill', function () {
-    map.getCanvas().style.cursor = 'pointer';
-});
+            var content = '<h3>Subbasin Info</h3>' +
+                          '<p><strong>REW:</strong> ' + (props.REW || 'N/A') + '</p>' +
+                          '<p><strong>FID:</strong> ' + (props.FID || 'N/A') + '</p>' +
+                          '<p><strong>Value:</strong> ' + (props.VALUE || 'N/A') + '</p>';
 
-// When the mouse leaves, change it back to standard
-map.on('mouseleave', 'subbasin-fill', function () {
-    map.getCanvas().style.cursor = '';
-});
+            new maplibregl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(content)
+                .addTo(map);
+        });
+
+        map.on('mouseenter', 'subbasin-fill', function () {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'subbasin-fill', function () {
+            map.getCanvas().style.cursor = '';
+        });
+
+
+        // ============================================
+        // INTERACTIVITY 2: STREAMS (NEW)
+        // ============================================
+        map.on('click', 'stream-lines', function (e) {
+            // Prevent the click from "falling through" to the subbasin below it
+            // This ensures if you click a stream, you only see stream info.
+            e.preventDefault(); 
+
+            var coordinates = e.lngLat;
+            if (!e.features || e.features.length === 0) return;
+
+            var props = e.features[0].properties;
+
+            // AUTO-GENERATED CONTENT
+            // Since we don't know your column names, this loop prints ALL data attached to the line.
+            var content = '<h3>Stream Info</h3>';
+            for (var key in props) {
+                content += '<p><strong>' + key + ':</strong> ' + props[key] + '</p>';
+            }
+
+            new maplibregl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(content)
+                .addTo(map);
+        });
+
+        // Change Cursor for Streams
+        map.on('mouseenter', 'stream-lines', function () {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'stream-lines', function () {
+            // Check if we are still hovering over the subbasin so we don't flicker
+            var features = map.queryRenderedFeatures(event.point, { layers: ['subbasin-fill'] });
+            map.getCanvas().style.cursor = features.length ? 'pointer' : '';
+        });
+
     });
 </script>
 
