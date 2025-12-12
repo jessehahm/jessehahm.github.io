@@ -80,6 +80,37 @@
                 'line-width': 1
             }
         });
+        // 5. Add Click Event
+map.on('click', 'subbasin-fill', function (e) {
+    // A. Get the clicked feature's attributes
+    // e.features[0] is the top-most shape the user clicked on
+    var coordinates = e.lngLat;
+    var props = e.features[0].properties; // This holds your FID, VALUE, REW
+
+    // B. Create the HTML for the popup
+    // We use the column names exactly as they appear in QGIS
+    var content = '<h3>Subbasin Info</h3>' +
+                  '<p><strong>REW:</strong> ' + props.REW + '</p>' +
+                  '<p><strong>FID:</strong> ' + props.FID + '</p>' +
+                  '<p><strong>Value:</strong> ' + props.VALUE + '</p>';
+
+    // C. Create and add the popup to the map
+    new maplibregl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(content)
+        .addTo(map);
+});
+
+// 6. Change Cursor on Hover (UI Polish)
+// When the mouse enters a polygon, change cursor to a "pointer" hand
+map.on('mouseenter', 'subbasin-fill', function () {
+    map.getCanvas().style.cursor = 'pointer';
+});
+
+// When the mouse leaves, change it back to standard
+map.on('mouseleave', 'subbasin-fill', function () {
+    map.getCanvas().style.cursor = '';
+});
     });
 </script>
 
